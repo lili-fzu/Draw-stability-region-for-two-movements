@@ -4,7 +4,8 @@ p1 = [0.3,0.7]; % probability % p1 and s1 need to have the same length; % elemen
 p2 = [0.5,0.5]; % probability % p2 and s2 need to have the same length; % element of p2 needs to be >0
 s1 = [1,2]; % I-SFR % element of s1 needs to be >=0
 s2 = [1,2]; % I-SFR % element of s2 needs to be >=0
-theta = 0.5; % success rate % 0 <= theta <= 1
+theta = [0.5;0.5];%prediction ability of [movement1, movement2] % 0 <= theta_i <= 1
+% [1;0] indicates O={1}, [0;1] indicates O={2}; [1;1] indicates O={1,2},and [0;0] indicates O = \emptyset
 K_max = 1; % 1-K_max equals the ratio of all-red
 %---------------------------
 Total_split = 101; 
@@ -34,10 +35,12 @@ s2_ba = Pe*s2e';
 pre_target = [Pe.*s1e,Pe.*s2e]; 
 piece_1 = 1:(length(pre_target)/2); %两部分
 piece_2 = (length(pre_target)/2+1):length(pre_target);
+theta = [theta(1+mod(0,length(theta))),theta(1+mod(1,length(theta)))];
 
 pre_target_non = [Pe*s1_ba,Pe.*s2_ba];
-pre_target_theta = pre_target*theta + pre_target_non*(1-theta);
-
+% pre_target_theta = pre_target*theta + pre_target_non*(1-theta);
+pre_target_theta = [Pe.*s1e*theta(1),Pe.*s2e*theta(2)]+...
+    + [Pe.*s1_ba*(1-theta(1)),Pe.*s2_ba*(1-theta(2))];
 %------------------------------------- 1. 原始问题 （全知问题）
 Lamda1 = nan(Total_split,2); % 最大流量
 fval_mat1 = nan(Total_split,1); 
@@ -89,7 +92,7 @@ hold on;
 plot(scatters2(:,1),scatters2(:,2),LineWidth= 1.5);
 hold off;
 
-legend('Complete info.','Partial info. with \theta = '+string(theta),'No info.')
+legend('Complete info.','Partial info. with \theta = ['+string(theta(1))'+';'+string(theta(2))+']',' No info.')
 xlabel('Capacity of movement 1: veh/interval','rot', 0)
 ylabel('Capacity of movement 2: veh/interval','rot', 90)
 set(gca,'FontSize',14,'Fontname','Times New Roman')
